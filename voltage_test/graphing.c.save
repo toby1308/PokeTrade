@@ -1,0 +1,57 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
+
+
+
+
+int main() {
+	printf("%d",CLOCKS_PER_SEC);
+	FILE * sd_file = fopen("transfer_data_line1.txt","r");
+	FILE * sc_file = fopen("transfer_data_line2.txt","r");
+	FILE * so_file = fopen("transfer_data_line3.txt","r");
+	FILE * si_file = fopen("transfer_data_line4.txt","r");
+
+	size_t len = 0;
+	ssize_t read;
+	char line[256];
+
+	while()
+
+	for (int i = 0; i < 50; i++){
+		switch(i){
+			case 6:
+				printf("  SD  ");
+				break;
+			case 12:
+				printf("      |");
+				for (int j = 0; j < 200; j++){
+					printf("-");
+				}
+				break;
+			case 18:
+				printf("  SC  ");
+				break;
+			case 30:
+				printf("  SO  ");
+				break;
+			case 42:
+				printf("  SI  ");
+				break;
+			default:
+				printf("      ");
+
+
+		}
+		printf("|");
+		printf("\n");
+	}
+	for (int j = 0;j <200; j++){
+		printf("-");
+	}
+
+
+
+}

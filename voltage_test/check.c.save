@@ -1,0 +1,21 @@
+#include <wiringPi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+
+#define VIR_SD 7
+#define VIR_SI 0
+#define VIR_SC 2
+#define VIR_SO 3
+
+int main(){
+	wiringPiSetup();
+	pinMode(VIR_SD,INPUT);
+	pinMode(VIR_SI,INPUT);
+	pinMode(VIR_SC,INPUT);
+	pinMode(VIR_SD,INPUT)
+
+;
+}
+
