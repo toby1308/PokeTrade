@@ -7,6 +7,8 @@
 
 
 int file_length(FILE * file){
+	//Finds length of given file//
+	//Requires file point reset after//
 	int count = 0;
 	char str[50];
 	while(fgets(str,50,file) != NULL){
@@ -16,34 +18,52 @@ int file_length(FILE * file){
 }
 
 void initialize_array(int* array, FILE * file){
+	//populates given array with file data//
+	//Requires file pointer reset after//
 	for(int i = 0; i < sizeof(array);i++){
 		fscanf(file,"%d\n",&array[i]);
 	}
 }
 
-void print_voltage(int* array,int target_voltage,int starting_clock,int page){
+void print_voltage(int* array,int target_voltage,int starting_clock,int page,int array_size){
 	int bit = 1;
 	int found = 0;
 	int count = 0;
 	int current_voltage = 0;
-	//printf("First clock time is: %d\n",array[1]);
-	while(bit < (sizeof(array)/sizeof(array[0])) && found == 0){
-		if(array[bit] > starting_clock + 556*(page-1)){
+
+	//Finds first clock cycle after page start//
+	while(bit < array_size && found == 0){
+		if(array[bit] >= starting_clock + 556*(page-1)){
 			found = 1;
 		}
 		bit = bit + 2;
 	}
-	if(page != 1){
-		//printf("triggered\n");
-		current_voltage = array[bit-3];
+	//Sets voltage to previous pages final voltage//
+	current_voltage = array[bit - 5];
+	if (bit == 3){
+		current_voltage = array[bit - 3];
+		if(array[bit - 2] > starting_clock + 556*(page - 1)){
+			current_voltage = 0;
+		}
 	}
-	//printf("first array value is: %d\n",array[bit]);
-	//printf("clock range is : %d - %d",starting_clock + 556*(page-1),starting_clock + 556*page);
+	//If no voltage found (empty data) sets voltage to zero//
+	if(found == 0){
+		current_voltage = 0;
+		for (int j = 0; j<200; j++){
+			if (current_voltage == target_voltage){
+				printf("_");
+			}else{
+				printf(" ");
+			}
+		}
+		return;
+	}
+	//Prints off voltage for cycles in range//
 	for(int j = 0; j < 200; j++){
 		if(array[bit] >= (starting_clock + 556*(page-1) + j*(556/200)) && (array[bit] <= (starting_clock + 556*page))){
 			//printf("Array value: %d is bigger than clock cycle: %d",array[bit], starting_clock + j*(556/200));
-			current_voltage = array[bit-1];
-			if(bit < (sizeof(array)/sizeof(array[0]))){
+			//current_voltage = array[bit-1];
+			if(bit < array_size){
 				bit = bit + 2;
 			}
 		}
@@ -56,7 +76,25 @@ void print_voltage(int* array,int target_voltage,int starting_clock,int page){
 
 }
 
-void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_clock,int page){
+void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_clock,int page,int sd_size, int sc_size,int so_size, int si_size){
+	/*
+	Takes in the voltage data and creates a graph for the range of clock cycles specified by the page number
+	Variables:
+	sd_array - array for channel 1
+	sc_array - array for channel 2
+	so_array - array for channel 3
+	si_array - array for channel 4
+
+	starting_clock - earliest clock cycle found within given data
+	page - specifies clock cycle offset from starting_clock
+
+	sd_size - size of sd_array
+	sc_size - size of sc_array
+	so_size - size of so_array
+	si_size - size of si_array
+
+	*/
+
 	int bit = 1;
 	int found = 0;
 	int count = 0;
@@ -65,14 +103,14 @@ void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_
 		switch(i){
 			case 3:
 				printf("   1  |");
-				print_voltage(sd_array,1,starting_clock,page);
+				print_voltage(sd_array,1,starting_clock,page,sd_size);
 				break;
 			case 6:
 				printf("  SD  ");
 				break;
 			case 9:
 				printf("   0  |");
-				print_voltage(sd_array,0,starting_clock,page);
+				print_voltage(sd_array,0,starting_clock,page,sd_size);
 				break;
 			case 12:
 				printf("      |");
@@ -82,14 +120,14 @@ void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_
 				break;
 			case 15:
 				printf("   1  |");
-				print_voltage(sc_array,1,starting_clock,page);
+				print_voltage(sc_array,1,starting_clock,page,sc_size);
 				break;
 			case 18:
 				printf("  SC  ");
 				break;
 			case 21:
 				printf("   0  |");
-				print_voltage(sc_array,0,starting_clock,page);
+				print_voltage(sc_array,0,starting_clock,page,sc_size);
 				break;
 			case 24:
 				printf("      |");
@@ -99,14 +137,14 @@ void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_
 				break;
 			case 27:
 				printf("   1  |");
-				print_voltage(so_array,1,starting_clock,page);
+				print_voltage(so_array,1,starting_clock,page,so_size);
 				break;
 			case 30:
 				printf("  SO  ");
 				break;
 			case 33:
 				printf("   0  |");
-				print_voltage(so_array,0,starting_clock,page);
+				print_voltage(so_array,0,starting_clock,page,so_size);
 				break;
 			case 36:
 				printf("      |");
@@ -116,14 +154,14 @@ void graph(int* sd_array,int* sc_array,int* so_array,int* si_array,int starting_
 				break;
 			case 39:
 				printf("   1  |");
-				print_voltage(si_array,1,starting_clock,page);
+				print_voltage(si_array,1,starting_clock,page,si_size);
 				break;
 			case 42:
 				printf("  SI  ");
 				break;
 			case 45:
 				printf("   0  |");
-				print_voltage(si_array,0,starting_clock,page);
+				print_voltage(si_array,0,starting_clock,page,si_size);
 				break;
 			default:
 				printf("      ");
@@ -149,10 +187,15 @@ int main() {
 		return 0;
 	}
 
-	int sd_array[4];
-	int sc_array[file_length(sc_file)];
-	int so_array[file_length(so_file)];
-	int si_array[file_length(si_file)];
+	int sd_size = file_length(sd_file);
+	int sc_size = file_length(sc_file);
+	int so_size = file_length(so_file);
+	int si_size = file_length(si_file);
+
+	int sd_array[sd_size];
+	int sc_array[sc_size];
+	int so_array[so_size];
+	int si_array[si_size];
 
 	//Resetting file pointers for another read iteration//
 	fclose(sd_file);
@@ -198,7 +241,7 @@ int main() {
 
 	//prints out the graph for the appropriate time//
 	int page = 1;
-	graph(sd_array,sc_array,so_array,si_array,starting_clock,page);
+	graph(sd_array,sc_array,so_array,si_array,starting_clock,page,sd_size,sc_size,so_size,si_size);
 
 	//input cycle
 	int input_cycle = 1;
@@ -208,7 +251,8 @@ int main() {
 		scanf("%s",inBuffer);
 		if(strcmp(inBuffer,"u") == 0){
 			page++;
-			graph(sd_array,sc_array,so_array,si_array,starting_clock,page);
+			graph(sd_array,sc_array,so_array,si_array,starting_clock,page,sd_size,sc_size,so_size,si_size);
+			printf("\n Clock Cycle: %d \n",starting_clock + (page-1)*556);
 		}
 		/*
 		if(strcmp(inBuffer,"d" && page != 1) == 0){
